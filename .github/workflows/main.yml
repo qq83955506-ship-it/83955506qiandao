@@ -1,0 +1,45 @@
+name: Discuz 每日签到
+
+on:
+  schedule:
+    # UTC 时间，GitHub Actions 使用 UTC
+    # 16:00 UTC = 北京时间 次日 00:00（适合零点击穿签到）
+    # 想改时间：北京时间 = UTC + 8，例如北京时间 08:30 对应 "30 0 * * *"
+    - cron: '0 16 * * *'
+  workflow_dispatch: {}   # 允许在 Actions 页面手动触发测试
+
+permissions:
+  contents: read
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 执行每日签到
+        env:
+          FORUM_URL: ${{ secrets.FORUM_URL }}
+          DZ_USERNAME: ${{ secrets.DZ_USERNAME }}
+          DZ_PASSWORD: ${{ secrets.DZ_PASSWORD }}
+          DZ_QUESTION_ID: ${{ secrets.DZ_QUESTION_ID }}
+          DZ_ANSWER: ${{ secrets.DZ_ANSWER }}
+          DZ_SIGN_URL: ${{ secrets.DZ_SIGN_URL }}
+          DZ_MOOD: ${{ secrets.DZ_MOOD }}
+          DZ_TODAYSAY: ${{ secrets.DZ_TODAYSAY }}
+          DZ_MIN_DELAY: ${{ secrets.DZ_MIN_DELAY }}
+          DZ_MAX_DELAY: ${{ secrets.DZ_MAX_DELAY }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python discuz_checkin.py
